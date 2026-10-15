@@ -13,10 +13,11 @@ It is released under the [MIT license](LICENSE.md).
 Package Manager > **+** > **Add package from git URL**:
 
 ```
-https://github.com/woopifun/sdk-unity.git#v0.1.0
+https://github.com/woopifun/sdk-unity.git#v0.2.0
 ```
 
-The part after `#` is the release tag; always pin one. A private
+The part after `#` is the release tag; always pin one. The newest release is listed under
+[Tags](https://github.com/woopifun/sdk-unity/tags) and in [CHANGELOG.md](CHANGELOG.md). A private
 repository needs Git credentials on your machine. Requires Unity 6000.0 or newer. Addressables is
 optional but needed for content hosting (below) and for the sample.
 
