@@ -29,7 +29,9 @@ imported by default.
 |---|---|---|
 | `IBookAdapter` | `Runtime/Book` | The only thing your book implements |
 | `WoopiBookHost` | `Runtime/Book` | Component the host page talks to; validates commands and reports results |
-| `BookStartArgs` / `BookStartArgsResolver` | `Runtime/Book` | Default language, opening page and content URL, read from the host |
+| `BookInitOptions` / `BookInitOptionsResolver` | `Runtime/Book` | Everything the host passes at startup (language, opening page, content URL, mute, volume) |
+| `WoopiAudio` | `Runtime/Book` | The host-controlled master sound state (mute, volume) |
+| `BookCommand`, `IBookCapabilities`, `WoopiSdk` | `Runtime/Book`, `Runtime` | Custom commands, optional capability tags, version info for the `ready` event |
 | `WebBookBridge` + `WoopiBookBridge.jslib` | `Runtime/Book`, `Runtime/Plugins/WebGL` | Unity to host events |
 | `WoopiContentUrl` | `Runtime/Addressables` | Injects the content URL at runtime (needs Addressables) |
 | WebGL template **Woopi** | `WebGLTemplate~/index.html` | Browser side: postMessage in, events out |
@@ -85,7 +87,7 @@ public sealed class MyBookAdapter : MonoBehaviour, IBookAdapter
     public event Action<int> PageChanged;     // a page became current (also after RestartPage)
     public event Action<string> LanguageChanged; // language changed, by host OR by the book
 
-    public IEnumerator Initialize(BookStartArgs args) { ... }
+    public IEnumerator Initialize(BookInitOptions options) { ... }
     public void GoTo(int page) { ... }
     public void Next() { ... }
     public void Previous() { ... }
@@ -97,10 +99,10 @@ public sealed class MyBookAdapter : MonoBehaviour, IBookAdapter
 
 Rules the host relies on:
 
-- **`Initialize`** applies the language first (`args.HasLanguage ? args.Language : DefaultLanguage`),
-  then opens `args.HasStartPage ? args.StartPage : 1`, and only finishes once that first page is
-  shown. The host sends the `ready` event afterwards. Keep `args` if `RestartBook` should return to the
-  opening page.
+- **`Initialize`** applies the language first (`options.HasLanguage ? options.Language : DefaultLanguage`),
+  then opens `options.HasStartPage ? options.StartPage : 1`, and only finishes once that first page is
+  shown. The host sends the `ready` event afterwards. Keep `options` if `RestartBook` should return to
+  the opening page. Sound needs nothing here (see Sound below).
 - **Do not start the book yourself** in `Start()` or `Awake()`; the host decides when.
 - **`PageChanged`** fires whenever the shown page changes, including in-book navigation (a "turn page"
   button) and a restart of the same page. It is what produces the `PageShown` event.
@@ -114,14 +116,67 @@ Rules the host relies on:
 - Calls from the host are already validated (range, "already there", "still loading"); the adapter can
   assume `GoTo` gets a valid page.
 
-## Start arguments
+## Start options
 
-All optional. Missing means the default language, page 1, and no content rewrite.
+All optional. Missing means the default language, page 1, no content rewrite, sound on at full volume.
 
-- Page URL: `index.html?lang=es&page=5&content=https://cdn.example.com/books/my-book/1.2.0`
+- Page URL: `index.html?lang=es&page=5&muted=1&volume=0.5&content=https://cdn.example.com/books/my-book/1.2.0`
 - Host `init` message, sent before the book has started.
 
-`BookStartArgsResolver` reads them; adapters only see `BookStartArgs`.
+`BookInitOptionsResolver` reads them; adapters only see `BookInitOptions`. Future startup settings are
+added to that one type, so your adapter signature does not change.
+
+## Sound
+
+The host page controls mute and volume, at start and at any time with `SetMuted` / `SetVolume`.
+`WoopiBookHost` applies them to `AudioListener.volume`, so every `AudioSource` follows with no code in
+your book. That setting is global: do not set `AudioListener.volume` yourself.
+
+- Do not add a mute button or volume slider to the book; the platform owns them.
+- If your book routes sound through its own system (an `AudioMixer`, an audio manager), untick
+  *Apply Audio To Listener* on `WoopiBookHost` and follow `WoopiAudio` yourself: read
+  `WoopiAudio.EffectiveVolume` (0 while muted) and listen to `WoopiAudio.Changed`.
+- Browsers only start audio after the reader interacts with the page; the SDK does not work around that.
+
+## Book-specific settings, commands and events
+
+The SDK's own contract stays small and stable. Anything particular to your book goes through these
+extension points, which need no SDK change.
+
+**Settings at startup.** `options.Extra` holds any extra values the host passed (`x_name=value` in the
+page URL, or an `extra` object in the `init` message), as text with case-insensitive names:
+
+```csharp
+var theme = options.GetExtra("theme", "light");
+```
+
+**Commands from the host.** Register them in `Awake` or `Start`, before the book is ready; return null
+when handled or a short reason to reject:
+
+```csharp
+host.RegisterCommand("ShowHint", cmd =>
+{
+    if (!cmd.HasNumber) return "bad-request";
+    hints.Show(cmd.Number);
+    return null;
+});
+```
+
+**Events to the host.** `host.Notify("ScoreChanged", json)` sends a `book-event` with that name and
+`data`. Names use letters, digits and `_`, and cannot reuse a built-in or reserved name (`GoToPage`,
+`Ready`, `PageShown`, and so on). Tell the platform team which commands, events and `extra` names your
+book supports; the platform cannot guess them.
+
+**Capabilities.** To advertise a feature tag in the `ready` event, implement `IBookCapabilities` on the
+adapter and return its tags.
+
+## Keeping your adapter compiling
+
+`IBookAdapter` is the small required core and is not expected to change. New SDK abilities arrive as
+optional interfaces (like `IBookCapabilities`), new `BookInitOptions` properties, or new built-in
+commands, so a book keeps building and working when the SDK is updated. The host page checks the
+`ready` event's `protocolVersion`, `commands` and `capabilities` before relying on a feature, and a
+command a book does not support is answered with `unsupported-action`.
 
 ## Testing
 

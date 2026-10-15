@@ -25,7 +25,7 @@ mergeInto(LibraryManager.library, {
     }
   },
 
-  // Host -> Unity at startup. Returns '{"lang":"es","page":5,"content":"https://..."}' (either key may be missing) from
+  // Host -> Unity at startup. Returns '{"lang":"es","page":5,"content":"https://...","muted":1,"volume":0.5,"extra":[{"k":"theme","v":"dark"}]}' (any key may be missing) from
   // window.WoopiInit, which the Woopi template fills from an `init` message or the page URL.
   // `consume` (1 when the book starts with these args, 0 to peek) controls whether a later `init`
   // message is treated as too late.

@@ -36,9 +36,9 @@ namespace Woopi.Core.Addressables
         private static void AutoInstall()
         {
             // Read without consuming: the host page's init message may still be on its way.
-            var args = BookStartArgsResolver.Resolve(consume: false);
-            if (args.HasContentUrl)
-                Install(args.ContentUrl);
+            var options = BookInitOptionsResolver.Resolve(consume: false);
+            if (options.HasContentUrl)
+                Install(options.ContentUrl);
         }
 
         /// <summary>

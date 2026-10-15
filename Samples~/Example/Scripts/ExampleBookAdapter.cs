@@ -15,7 +15,7 @@ namespace Woopi.Examples.SimpleBook
         [SerializeField] private ExampleBookLoader loader;
         [SerializeField] private ExampleLanguage language;
 
-        private BookStartArgs _args;
+        private BookInitOptions _options;
 
         public int PageCount => loader.PageCount;
         public int CurrentPage => loader.CurrentPage;
@@ -35,17 +35,18 @@ namespace Woopi.Examples.SimpleBook
             remove => language.Changed -= value;
         }
 
-        public IEnumerator Initialize(BookStartArgs args)
+        public IEnumerator Initialize(BookInitOptions options)
         {
-            _args = args;
+            _options = options;
 
             // Language first, so the first page already opens in it. An unknown or missing
-            // language falls back to the book's default.
-            if (!args.HasLanguage || !language.Set(args.Language))
+            // language falls back to the book's default. Sound needs nothing here: the host
+            // applies the mute and volume it was given.
+            if (!options.HasLanguage || !language.Set(options.Language))
                 language.Set(language.DefaultLanguage);
 
             // Finishes once the first page is shown; the host sends "ready" after that.
-            yield return loader.Begin(args.StartPage);
+            yield return loader.Begin(options.StartPage);
         }
 
         public void GoTo(int page) => loader.GoTo(page);
@@ -53,6 +54,6 @@ namespace Woopi.Examples.SimpleBook
         public void Previous() => loader.Previous();
         public bool SetLanguage(string code) => language.Set(code);
         public void RestartPage() => loader.RestartPage();
-        public void RestartBook() => loader.RestartBook(_args.StartPage);
+        public void RestartBook() => loader.RestartBook(_options.StartPage);
     }
 }

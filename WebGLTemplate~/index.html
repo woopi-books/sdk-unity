@@ -21,21 +21,32 @@
       //   { action: "GoToPage",      value: 4 }     // 1-based
       //   { action: "GoToPageIndex", value: 3 }     // 0-based
       //   { action: "SetLanguage",   value: "es" }  // any time, also mid-book
-      //   { action: "init", language: "es", page: 5, content: "https://cdn.example.com/books/x/1.0.0" }
+      //   { action: "SetMuted",      value: true }  // any time
+      //   { action: "SetVolume",     value: 0.5 }   // any time, 0 to 1
+      //   { action: "init", language: "es", page: 5, content: "https://cdn.example.com/books/x/1.0.0",
+      //     muted: true, volume: 0.5, extra: { theme: "dark" } }
       //                                       // optional, must arrive before the book boots
+      //                                       // (extra = book-specific settings, passed to the book as text)
+      //   { action: "AnythingElse",  value: "x" }   // a command the book registered itself;
+      //                                       // answered with reason "unsupported-action" if the book has no such command
       //   (optional) "requestId": "abc" to correlate the reply
       //
-      // Startup arguments can also be given in the page URL: ?lang=es&page=5&content=https://cdn.example.com/books/x/1.0.0
+      // Startup options can also be given in the page URL:
+      //   ?lang=es&page=5&muted=1&volume=0.5&content=https://cdn.example.com/books/x/1.0.0&x_theme=dark
+      // (x_name=value passes a book-specific setting, same as init.extra)
       // (content = where the book's Addressables files are hosted; the URL form is the reliable one)
-      // With none, the book opens in its default language on page 1.
+      // With none, the book opens in its default language on page 1, with sound on at full volume.
       //
       // Event  (book -> host):
       //   { source: "woopi-unity", type: "ready", detail }
+      //       detail also has protocolVersion, sdkVersion, commands (every command the book accepts)
+      //       and capabilities (feature tags), so a host can check what this book supports
       //   { source: "woopi-unity", type: "error", message }
       //   { source: "woopi-unity", type: "book-event", detail: {
       //       action, requestId, success, reason, currentPage, currentPageIndex,
-      //       pageCount, language } }
-      //   action "LanguageChanged" is sent whenever the language changes.
+      //       pageCount, language, muted, volume } }
+      //   action "LanguageChanged" is sent whenever the language changes,
+      //   action "AudioChanged" whenever mute or volume change.
       // ================================================================
       (function () {
         // Origins allowed to control the book. Edit for your deployments.
@@ -46,16 +57,57 @@
         ];
 
         var BOOK_OBJECT = "WoopiBookHost";
-        var ALLOWED_ACTIONS = {
+        // Commands with their own entry point on the book (SendMessage is only ever called with these
+        // names, or with "Command" for the book's custom commands).
+        var BUILTIN_ACTIONS = {
+          NextPage: true, PreviousPage: true, GoToPageIndex: true, GoToPage: true,
+          SetLanguage: true, RestartPage: true, RestartBook: true,
+          SetMuted: true, SetVolume: true
+        };
+        // What a book built before the ready event listed its commands understands.
+        var LEGACY_ACTIONS = {
           NextPage: true, PreviousPage: true, GoToPageIndex: true, GoToPage: true,
           SetLanguage: true, RestartPage: true, RestartBook: true
         };
+        // Names the host may send; "Command", "init" and event names are not commands.
+        var ACTION_NAME = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
+        var RESERVED = { Command: true, init: true, Ready: true, PageShown: true, LanguageChanged: true, AudioChanged: true };
 
         var instanceRef = null;
+        var bookCommands = null; // command names from the book's ready event; null for older books
         var bookReady = false; // true once the book itself reports Ready
         var queued = [];       // commands that arrived before the book was ready
 
-        // Startup args: page URL first, an `init` message overrides.
+        // true/"true"/1/"1" -> 1, false/"false"/0/"0" -> 0, anything else -> null.
+        function parseMuted(v) {
+          if (v === true || v === 1) return 1;
+          if (v === false || v === 0) return 0;
+          if (typeof v !== "string") return null;
+          v = v.toLowerCase();
+          if (v === "true" || v === "1" || v === "yes" || v === "on") return 1;
+          if (v === "false" || v === "0" || v === "no" || v === "off") return 0;
+          return null;
+        }
+
+        // A number from 0 to 1 (values outside are clamped), or null.
+        function parseVolume(v) {
+          if (v === null || v === undefined || v === "") return null;
+          var n = Number(v);
+          if (!isFinite(n)) return null;
+          return Math.min(1, Math.max(0, n));
+        }
+
+        // Book-specific startup settings, kept as a list of {k, v} text pairs (what the book reads).
+        function setExtra(key, value) {
+          if (!key || value === undefined || value === null) return;
+          var list = window.WoopiInit.extra || (window.WoopiInit.extra = []);
+          for (var i = 0; i < list.length; i++) {
+            if (list[i].k.toLowerCase() === String(key).toLowerCase()) { list[i].v = String(value); return; }
+          }
+          list.push({ k: String(key), v: String(value) });
+        }
+
+        // Startup options: page URL first, an `init` message overrides.
         window.WoopiInit = {};
         window.WoopiInitConsumed = false;
         (function readUrl() {
@@ -64,9 +116,16 @@
             var lang = q.get("lang");
             var page = parseInt(q.get("page"), 10);
             var content = q.get("content");
+            var muted = parseMuted(q.get("muted"));
+            var volume = parseVolume(q.get("volume"));
             if (content) window.WoopiInit.content = content;
             if (lang) window.WoopiInit.lang = lang;
             if (page > 0) window.WoopiInit.page = page;
+            if (muted !== null) window.WoopiInit.muted = muted;
+            if (volume !== null) window.WoopiInit.volume = volume;
+            q.forEach(function (value, name) {
+              if (name.length > 2 && name.slice(0, 2).toLowerCase() === "x_") setExtra(name.slice(2), value);
+            });
           } catch (e) {}
         })();
 
@@ -79,14 +138,43 @@
           }
         }
 
+        function isSupported(action) {
+          if (bookCommands) return bookCommands.indexOf(action) !== -1;
+          return LEGACY_ACTIONS[action] === true;
+        }
+
+        function replyUnsupported(cmd) {
+          var detail = {
+            action: typeof cmd.action === "string" ? cmd.action : "",
+            requestId: typeof cmd.requestId === "string" ? cmd.requestId : "",
+            success: false, reason: "unsupported-action"
+          };
+          notifyHost({ source: "woopi-unity", type: "book-event", detail: detail });
+        }
+
         function runCommand(cmd) {
-          if (!instanceRef || !cmd || !ALLOWED_ACTIONS[cmd.action]) return;
+          if (!instanceRef || !cmd) return;
+          if (typeof cmd.action !== "string" || !ACTION_NAME.test(cmd.action) || RESERVED[cmd.action]
+              || !isSupported(cmd.action)) {
+            replyUnsupported(cmd);
+            return;
+          }
           var hasValue = cmd.value !== undefined && cmd.value !== null;
           var payload;
+          if (!BUILTIN_ACTIONS[cmd.action]) {
+            // A command the book registered itself: one JSON payload through the single "Command" entry point.
+            var custom = { action: cmd.action, id: typeof cmd.requestId === "string" ? cmd.requestId : "" };
+            if (hasValue) custom.value = String(cmd.value);
+            instanceRef.SendMessage(BOOK_OBJECT, "Command", JSON.stringify(custom));
+            return;
+          }
           if (typeof cmd.requestId === "string" && cmd.requestId) {
             var body = { id: cmd.requestId };
             if (typeof cmd.value === "string") body.value = cmd.value;
-            else if (hasValue) body.index = cmd.value | 0;
+            else if (hasValue) {
+              body.value = String(cmd.value);  // numbers keep their decimals, booleans become "true"/"false"
+              if (typeof cmd.value === "number") body.index = cmd.value | 0;
+            }
             payload = JSON.stringify(body);
           } else {
             payload = hasValue ? String(cmd.value) : "";
@@ -99,17 +187,26 @@
           var lang = typeof data.language === "string" ? data.language : null;
           var page = parseInt(data.page, 10);
           var content = typeof data.content === "string" ? data.content : null;
+          var muted = parseMuted(data.muted);
+          var volume = parseVolume(data.volume);
+          var extra = data.extra && typeof data.extra === "object" ? data.extra : null;
           if (!window.WoopiInitConsumed) {
             // Book has not read its start args yet: just change them.
             if (lang) window.WoopiInit.lang = lang;
             if (page > 0) window.WoopiInit.page = page;
             if (content) window.WoopiInit.content = content;
+            if (muted !== null) window.WoopiInit.muted = muted;
+            if (volume !== null) window.WoopiInit.volume = volume;
+            if (extra) for (var key in extra) if (Object.prototype.hasOwnProperty.call(extra, key)) setExtra(key, extra[key]);
           } else {
             // Too late for startup args: apply as ordinary commands.
             if (lang) dispatch({ action: "SetLanguage", value: lang, requestId: data.requestId });
             if (page > 0) dispatch({ action: "GoToPage", value: page });
+            if (muted !== null) dispatch({ action: "SetMuted", value: muted === 1 });
+            if (volume !== null) dispatch({ action: "SetVolume", value: volume });
             // The content location is needed before the book's first load; it cannot be applied now.
             if (content) console.warn("[Woopi] init.content arrived after the book started and was ignored; pass it in the page URL (?content=) or send init before the book boots.");
+            if (extra) console.warn("[Woopi] init.extra arrived after the book started and was ignored; send init before the book boots, or use a custom command.");
           }
         }
 
@@ -138,6 +235,7 @@
           var detail = e.detail;
           if (detail && detail.action === "Ready" && !bookReady) {
             bookReady = true;
+            bookCommands = Array.isArray(detail.commands) ? detail.commands : null;
             notifyHost({ source: "woopi-unity", type: "ready", detail: detail });
             flush();
             return;

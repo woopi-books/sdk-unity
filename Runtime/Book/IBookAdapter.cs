@@ -36,10 +36,12 @@ namespace Woopi.Core.Book
         event Action<string> LanguageChanged;
 
         /// <summary>
-        /// Opens the book. Missing arguments in <paramref name="args"/> mean "use the book's
+        /// Opens the book. Missing values in <paramref name="options"/> mean "use the book's
         /// default" (see <see cref="DefaultLanguage"/>, page 1). Finishes once the first page is shown.
+        /// Sound needs no handling here: <see cref="WoopiBookHost"/> applies mute and volume itself
+        /// (see <see cref="WoopiAudio"/>).
         /// </summary>
-        IEnumerator Initialize(BookStartArgs args);
+        IEnumerator Initialize(BookInitOptions options);
 
         void GoTo(int page);
         void Next();
