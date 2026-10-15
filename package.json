@@ -1,0 +1,24 @@
+{
+  "name": "com.woopi.sdk",
+  "version": "0.1.0",
+  "displayName": "Woopi SDK",
+  "description": "Book host bridge for Woopi interactive books: lets the Woopi platform drive a Unity WebGL book (next/previous/go to page, language, restart) and tells it where its Addressables content is hosted.",
+  "unity": "6000.0",
+  "license": "MIT",
+  "keywords": [
+    "woopi",
+    "webgl",
+    "interactive-book",
+    "addressables"
+  ],
+  "author": {
+    "name": "Woopi"
+  },
+  "samples": [
+    {
+      "displayName": "Example book",
+      "description": "A minimal complete book: a core scene with the Woopi host, ten dummy page scenes loaded with Addressables, and the adapter. Requires Addressables and the URP 2D renderer.",
+      "path": "Samples~/Example"
+    }
+  ]
+}

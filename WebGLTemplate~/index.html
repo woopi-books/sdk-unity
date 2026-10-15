@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{{{ PRODUCT_NAME }}}</title>
+  </head>
+  <body style="text-align: center; padding: 0; border: 0; margin: 0;">
+    <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1" style="width: {{{ WIDTH }}}px; height: {{{ HEIGHT }}}px; background: {{{ BACKGROUND_COLOR }}}"></canvas>
+    <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+    <script>
+      // ================================================================
+      // Woopi host bridge (shared by every Woopi book)
+      // ----------------------------------------------------------------
+      // Lets the hosting page (e.g. https://woopi.fun/unity/<id>) drive the
+      // book whether it is embedded in an <iframe> or served top-level.
+      // Contract: Assets/Woopi/host-integration.md
+      //
+      // Command  (host -> book):  window.postMessage({ source: "woopi-host", ... }, origin)
+      //   { action: "NextPage" | "PreviousPage" | "RestartPage" | "RestartBook" }
+      //   { action: "GoToPage",      value: 4 }     // 1-based
+      //   { action: "GoToPageIndex", value: 3 }     // 0-based
+      //   { action: "SetLanguage",   value: "es" }  // any time, also mid-book
+      //   { action: "init", language: "es", page: 5, content: "https://cdn.example.com/books/x/1.0.0" }
+      //                                       // optional, must arrive before the book boots
+      //   (optional) "requestId": "abc" to correlate the reply
+      //
+      // Startup arguments can also be given in the page URL: ?lang=es&page=5&content=https://cdn.example.com/books/x/1.0.0
+      // (content = where the book's Addressables files are hosted; the URL form is the reliable one)
+      // With none, the book opens in its default language on page 1.
+      //
+      // Event  (book -> host):
+      //   { source: "woopi-unity", type: "ready", detail }
+      //   { source: "woopi-unity", type: "error", message }
+      //   { source: "woopi-unity", type: "book-event", detail: {
+      //       action, requestId, success, reason, currentPage, currentPageIndex,
+      //       pageCount, language } }
+      //   action "LanguageChanged" is sent whenever the language changes.
+      // ================================================================
+      (function () {
+        // Origins allowed to control the book. Edit for your deployments.
+        var ALLOWED_ORIGINS = [
+          "https://woopi.fun",
+          "http://localhost:8080",
+          "http://localhost:3000"
+        ];
+
+        var BOOK_OBJECT = "WoopiBookHost";
+        var ALLOWED_ACTIONS = {
+          NextPage: true, PreviousPage: true, GoToPageIndex: true, GoToPage: true,
+          SetLanguage: true, RestartPage: true, RestartBook: true
+        };
+
+        var instanceRef = null;
+        var bookReady = false; // true once the book itself reports Ready
+        var queued = [];       // commands that arrived before the book was ready
+
+        // Startup args: page URL first, an `init` message overrides.
+        window.WoopiInit = {};
+        window.WoopiInitConsumed = false;
+        (function readUrl() {
+          try {
+            var q = new URLSearchParams(window.location.search);
+            var lang = q.get("lang");
+            var page = parseInt(q.get("page"), 10);
+            var content = q.get("content");
+            if (content) window.WoopiInit.content = content;
+            if (lang) window.WoopiInit.lang = lang;
+            if (page > 0) window.WoopiInit.page = page;
+          } catch (e) {}
+        })();
+
+        function notifyHost(msg) {
+          if (!window.parent || window.parent === window) return;
+          for (var i = 0; i < ALLOWED_ORIGINS.length; i++) {
+            // A targetOrigin that is not the real parent origin simply
+            // does not deliver, so listing all candidates is safe.
+            try { window.parent.postMessage(msg, ALLOWED_ORIGINS[i]); } catch (e) {}
+          }
+        }
+
+        function runCommand(cmd) {
+          if (!instanceRef || !cmd || !ALLOWED_ACTIONS[cmd.action]) return;
+          var hasValue = cmd.value !== undefined && cmd.value !== null;
+          var payload;
+          if (typeof cmd.requestId === "string" && cmd.requestId) {
+            var body = { id: cmd.requestId };
+            if (typeof cmd.value === "string") body.value = cmd.value;
+            else if (hasValue) body.index = cmd.value | 0;
+            payload = JSON.stringify(body);
+          } else {
+            payload = hasValue ? String(cmd.value) : "";
+          }
+          // Always exactly one string argument: the C# entry points all take one.
+          instanceRef.SendMessage(BOOK_OBJECT, cmd.action, payload);
+        }
+
+        function handleInit(data) {
+          var lang = typeof data.language === "string" ? data.language : null;
+          var page = parseInt(data.page, 10);
+          var content = typeof data.content === "string" ? data.content : null;
+          if (!window.WoopiInitConsumed) {
+            // Book has not read its start args yet: just change them.
+            if (lang) window.WoopiInit.lang = lang;
+            if (page > 0) window.WoopiInit.page = page;
+            if (content) window.WoopiInit.content = content;
+          } else {
+            // Too late for startup args: apply as ordinary commands.
+            if (lang) dispatch({ action: "SetLanguage", value: lang, requestId: data.requestId });
+            if (page > 0) dispatch({ action: "GoToPage", value: page });
+            // The content location is needed before the book's first load; it cannot be applied now.
+            if (content) console.warn("[Woopi] init.content arrived after the book started and was ignored; pass it in the page URL (?content=) or send init before the book boots.");
+          }
+        }
+
+        function flush() {
+          if (!bookReady || !instanceRef) return;
+          var pending = queued;
+          queued = [];
+          for (var i = 0; i < pending.length; i++) runCommand(pending[i]);
+        }
+
+        function dispatch(cmd) {
+          if (bookReady && instanceRef) runCommand(cmd);
+          else queued.push(cmd);
+        }
+
+        window.addEventListener("message", function (e) {
+          if (ALLOWED_ORIGINS.indexOf(e.origin) === -1) return;
+          var data = e.data;
+          if (!data || data.source !== "woopi-host") return;
+          if (data.action === "init") handleInit(data);
+          else dispatch(data);
+        });
+
+        // Emitted on window by WoopiBookBridge.jslib for every book event.
+        window.addEventListener("woopi-book-event", function (e) {
+          var detail = e.detail;
+          if (detail && detail.action === "Ready" && !bookReady) {
+            bookReady = true;
+            notifyHost({ source: "woopi-unity", type: "ready", detail: detail });
+            flush();
+            return;
+          }
+          notifyHost({ source: "woopi-unity", type: "book-event", detail: detail });
+        });
+
+        window.__woopiOnUnityReady = function (instance) {
+          instanceRef = instance;
+          window.unityInstance = instance; // same-page hosting / dev console
+          flush(); // the book can report Ready before this promise resolves
+        };
+
+        window.__woopiOnUnityError = function (message) {
+          notifyHost({ source: "woopi-unity", type: "error", message: String(message) });
+        };
+      })();
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile: fill the browser client area with the game canvas.
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+
+        var canvas = document.querySelector("#unity-canvas");
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        canvas.style.position = "fixed";
+
+        document.body.style.textAlign = "left";
+      }
+
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        arguments: [],
+        dataUrl: "Build/{{{ DATA_FILENAME }}}",
+        frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: "Build/{{{ CODE_FILENAME }}}",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "{{{ COMPANY_NAME }}}",
+        productName: "{{{ PRODUCT_NAME }}}",
+        productVersion: "{{{ PRODUCT_VERSION }}}",
+      }).then((unityInstance) => {
+        window.__woopiOnUnityReady(unityInstance);
+      }).catch((message) => {
+        window.__woopiOnUnityError(message);
+        console.error(message);
+      });
+    </script>
+  </body>
+</html>

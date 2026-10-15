@@ -1,0 +1,23 @@
+{
+    "name": "Woopi.Examples.SimpleBook.Editor",
+    "rootNamespace": "Woopi.Examples.SimpleBook.Editor",
+    "references": [
+        "Woopi.Core",
+        "Woopi.Examples.SimpleBook",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

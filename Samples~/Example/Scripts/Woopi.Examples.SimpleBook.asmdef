@@ -1,0 +1,18 @@
+{
+    "name": "Woopi.Examples.SimpleBook",
+    "rootNamespace": "Woopi.Examples.SimpleBook",
+    "references": [
+        "Woopi.Core",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,8 @@
+/* Theme for runtime UI Toolkit panels. Intentionally minimal: DevNav.uss styles
+   every control it uses explicitly, so no base control theme is pulled in. The font is left
+   to the panel's text settings — overriding it here collapses every Label to zero height. */
+
+:root {
+    color: #f2f2f5;
+    font-size: 14px;
+}

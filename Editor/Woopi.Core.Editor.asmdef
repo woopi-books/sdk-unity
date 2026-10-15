@@ -1,0 +1,18 @@
+{
+    "name": "Woopi.Core.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:43e6de2a074f89c47a015f29a25e46b1"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

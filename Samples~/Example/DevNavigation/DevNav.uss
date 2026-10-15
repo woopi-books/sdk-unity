@@ -1,0 +1,164 @@
+:root {
+    --nav-bg: rgba(18, 18, 22, 0.82);
+    --nav-border: rgba(255, 255, 255, 0.18);
+    --nav-text: #f2f2f5;
+    --nav-text-dim: rgba(242, 242, 245, 0.55);
+    --nav-surface: rgba(255, 255, 255, 0.10);
+    --nav-surface-hover: rgba(255, 255, 255, 0.20);
+    --nav-surface-active: rgba(255, 255, 255, 0.04);
+    --nav-accent: #4da3ff;
+    --nav-accent-hover: #6db3ff;
+    --spacing-sm: 6px;
+    --spacing-md: 10px;
+    --spacing-lg: 16px;
+    --radius: 6px;
+}
+
+/* UIDocument's own container sizes to its content, so it collapses to zero height unless
+   told to fill the panel — and a zero-height parent shrinks every child inside it. */
+.unity-ui-document__root {
+    flex-grow: 1;
+}
+
+.nav-root {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-panel {
+    padding: var(--spacing-lg);
+    background-color: var(--nav-bg);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: var(--nav-border);
+    border-bottom-color: var(--nav-border);
+    border-left-color: var(--nav-border);
+    border-right-color: var(--nav-border);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    align-items: center;
+}
+
+.nav-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.jump-row {
+    margin-top: var(--spacing-md);
+}
+
+/* --- page arrows ------------------------------------------------------- */
+
+.arrow-button {
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 0;
+    font-size: 22px;
+    color: var(--nav-text);
+    background-color: var(--nav-surface);
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    transition-duration: 0.12s;
+}
+
+.arrow-button:hover {
+    background-color: var(--nav-surface-hover);
+}
+
+.arrow-button:active {
+    background-color: var(--nav-surface-active);
+}
+
+.arrow-button:disabled {
+    color: var(--nav-text-dim);
+    opacity: 0.45;
+}
+
+.page-label {
+    min-width: 96px;
+    margin-left: var(--spacing-md);
+    margin-right: var(--spacing-md);
+    font-size: 18px;
+    color: var(--nav-text);
+    -unity-text-align: middle-center;
+}
+
+/* --- jump-to-page ------------------------------------------------------ */
+
+.jump-field {
+    width: 96px;
+    margin: 0;
+}
+
+/* The visible box of a text field is an inner child, so it has to be styled
+   directly — styling the field itself only moves the outer container. */
+.jump-field > .unity-base-text-field__input {
+    height: 34px;
+    padding-left: var(--spacing-sm);
+    padding-right: var(--spacing-sm);
+    font-size: 16px;
+    color: var(--nav-text);
+    background-color: var(--nav-surface);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-color: var(--nav-border);
+    border-bottom-color: var(--nav-border);
+    border-left-color: var(--nav-border);
+    border-right-color: var(--nav-border);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    -unity-text-align: middle-center;
+}
+
+.jump-field > .unity-base-text-field__input:focus {
+    border-top-color: var(--nav-accent);
+    border-bottom-color: var(--nav-accent);
+    border-left-color: var(--nav-accent);
+    border-right-color: var(--nav-accent);
+}
+
+.jump-button {
+    height: 34px;
+    min-width: 56px;
+    margin: 0 0 0 var(--spacing-sm);
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+    font-size: 15px;
+    color: var(--nav-text);
+    background-color: var(--nav-accent);
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    transition-duration: 0.12s;
+}
+
+.jump-button:hover {
+    background-color: var(--nav-accent-hover);
+}
+
+.jump-button:active {
+    background-color: var(--nav-accent);
+    opacity: 0.8;
+}

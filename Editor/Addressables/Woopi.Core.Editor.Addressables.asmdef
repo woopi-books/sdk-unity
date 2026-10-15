@@ -1,0 +1,28 @@
+{
+    "name": "Woopi.Core.Editor.Addressables",
+    "rootNamespace": "Woopi.Core.Editor.Addressables",
+    "references": [
+        "Woopi.Core.Addressables",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "WOOPI_ADDRESSABLES"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "1.0.0",
+            "define": "WOOPI_ADDRESSABLES"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="DevNav.uss"/>
+    <ui:VisualElement name="root" picking-mode="Ignore" class="nav-root" style="justify-content: flex-start;">
+        <ui:VisualElement name="navPanel" class="nav-panel">
+            <ui:VisualElement name="pageRow" class="nav-row">
+                <ui:Button name="prevButton" text="◀" class="arrow-button"/>
+                <ui:Label name="pageLabel" text="1 / 10" class="page-label"/>
+                <ui:Button name="nextButton" text="▶" class="arrow-button"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="jumpRow" class="nav-row jump-row">
+                <ui:IntegerField name="jumpField" value="1" class="jump-field"/>
+                <ui:Button name="jumpButton" text="Go" class="jump-button"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
