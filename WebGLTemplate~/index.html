@@ -52,6 +52,15 @@
         // Origins allowed to control the book. Edit for your deployments.
         var ALLOWED_ORIGINS = [
           "https://woopi.fun",
+          "https://www.woopi.fun",
+          // Plataforma Woopi en AWS Amplify: dev (rama develop) y prod (rama main) de woopi-books.
+          // Sin estos, el libro carga en la plataforma pero no recibe comandos ni manda eventos.
+          "https://develop.d3sut94vhpb3kn.amplifyapp.com",
+          "https://main.d3fsiocaft3z7w.amplifyapp.com",
+          // Desarrollo local: la app (Vite) y la pagina de prueba de ai-books.
+          "http://localhost:5173",
+          "http://localhost:5174",
+          "http://127.0.0.1:5173",
           "http://localhost:8080",
           "http://localhost:3000"
         ];
