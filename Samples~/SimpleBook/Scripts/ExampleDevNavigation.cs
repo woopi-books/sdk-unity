@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using Woopi.Core.UI;
 
 namespace Woopi.Examples.SimpleBook
 {
@@ -12,29 +13,25 @@ namespace Woopi.Examples.SimpleBook
     /// It talks to the book's loader directly. Use <see cref="Woopi.Core.Book.WoopiBookHost"/>
     /// commands (SendMessage) when you want to exercise the host contract itself.
     ///
-    /// The panel's root element arrives through a reload callback that can fire more than once, so the
-    /// element wiring is rebuilt every time.
+    /// The panel's root element can arrive more than once (<see cref="WoopiPanelBehaviour"/> hands it over each time,
+    /// on PanelRenderer and on UIDocument alike), so the element wiring is rebuilt every time.
     /// </summary>
-    [RequireComponent(typeof(PanelRenderer))]
-    public sealed class ExampleDevNavigation : MonoBehaviour
+    public sealed class ExampleDevNavigation : WoopiPanelBehaviour
     {
         [SerializeField] private ExampleBookLoader loader;
 
-        private PanelRenderer _renderer;
-        private int _uiVersion = -1;
         private Button _prevButton;
         private Button _nextButton;
         private Button _jumpButton;
         private Label _pageLabel;
         private IntegerField _jumpField;
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
+
             if (loader == null)
                 loader = FindAnyObjectByType<ExampleBookLoader>();
-
-            _renderer = GetComponent<PanelRenderer>();
-            _renderer.RegisterUIReloadCallback((PanelRenderer.VersionedUIReloadCallback)OnUIReload);
 
             if (loader == null)
                 return;
@@ -43,13 +40,9 @@ namespace Woopi.Examples.SimpleBook
             loader.LoadingChanged += OnLoadingChanged;
         }
 
-        private void OnDisable()
+        protected override void OnDisable()
         {
-            if (_renderer != null)
-                _renderer.UnregisterUIReloadCallback((PanelRenderer.VersionedUIReloadCallback)OnUIReload);
-
-            _uiVersion = -1;
-            DetachElements();
+            base.OnDisable();
 
             if (loader == null)
                 return;
@@ -58,14 +51,8 @@ namespace Woopi.Examples.SimpleBook
             loader.LoadingChanged -= OnLoadingChanged;
         }
 
-        private void OnUIReload(PanelRenderer panelRenderer, VisualElement rootElement, int version)
+        protected override void OnPanelReady(VisualElement rootElement)
         {
-            if (version == _uiVersion)
-                return;
-
-            _uiVersion = version;
-            DetachElements();
-
             _prevButton = rootElement.Q<Button>("prevButton");
             _nextButton = rootElement.Q<Button>("nextButton");
             _jumpButton = rootElement.Q<Button>("jumpButton");
@@ -80,7 +67,7 @@ namespace Woopi.Examples.SimpleBook
             Refresh();
         }
 
-        private void DetachElements()
+        protected override void OnPanelLost()
         {
             if (_prevButton != null) _prevButton.clicked -= OnPrevious;
             if (_nextButton != null) _nextButton.clicked -= OnNext;

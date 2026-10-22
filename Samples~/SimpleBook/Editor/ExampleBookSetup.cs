@@ -10,6 +10,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using Woopi.Core.Book;
+using Woopi.Core.UI;
 
 namespace Woopi.Examples.SimpleBook.Editor
 {
@@ -186,7 +187,7 @@ namespace Woopi.Examples.SimpleBook.Editor
             EditorUtility.SetDirty(panelSettings);
 
             var navObject = new GameObject("DevNavigation (Editor only)") { tag = "EditorOnly" };
-            var panel = navObject.AddComponent<PanelRenderer>();
+            var panel = WoopiPanelBehaviour.AddPanelComponent(navObject);
             var navigation = navObject.AddComponent<ExampleDevNavigation>();
 
             var panelSo = new SerializedObject(panel);

@@ -1,0 +1,7 @@
+/* Theme for the safe zone overlay's panel. Intentionally minimal: WoopiSafeZone.uss styles everything it uses, so no
+   base control theme is pulled in. */
+
+:root {
+    color: #ffffff;
+    font-size: 14px;
+}

@@ -33,3 +33,12 @@ Each interaction type has its own arbiter, so a TapTarget and a HoldTarget on th
 1. Add the component to a GameObject with a `SpriteRenderer`.
 2. Pick the mode and tune padding / timings.
 3. Add listeners to the events in the Inspector.
+
+## Page-turn gestures
+
+The WebGL template turns pages with a double tap near the left / right edge and with fast horizontal swipes
+anywhere, and the book receives those touches too. `Tap`, `Hold` and vertical swipes are safe. Double taps and
+horizontal swipes or drags can turn the page by accident, and a pointer or touch in the bottom strip opens the reader menu,
+so keep them in the safe zone. The `MultiTap` and `Swipe`
+scenes include an Editor-only `Woopi Safe Zone Overlay` object that draws the zones in the Game view (also while
+editing, and never in a build); add one to any scene with **GameObject > Woopi > Safe Zone Overlay**.
