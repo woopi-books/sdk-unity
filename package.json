@@ -27,6 +27,11 @@
       "displayName": "Interactions",
       "description": "Reusable pointer interactions with one demo scene each: tap, multi-tap (double / triple / custom count), drag, hold (charge or hold / release) and swipe. Each can let only the closest sprite react or all of them. Requires the Input System.",
       "path": "Samples~/Interactions"
+    },
+    {
+      "displayName": "Localization",
+      "description": "Text, an image and an audio clip that change with the book's language, in English and Spanish, plus a language menu that lists whatever languages the book has. Shows the layout that lets a language be published later without rebuilding the player. Requires Unity Localization, Addressables and the Input System.",
+      "path": "Samples~/Localization"
     }
   ]
 }

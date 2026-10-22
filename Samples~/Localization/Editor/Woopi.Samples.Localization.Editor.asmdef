@@ -1,0 +1,25 @@
+{
+    "name": "Woopi.Samples.Localization.Editor",
+    "rootNamespace": "Woopi.Samples.Localization.Editor",
+    "references": [
+        "Woopi.Core.Editor.Localization",
+        "Woopi.Samples.Localization",
+        "UnityEngine.UI",
+        "Unity.Addressables",
+        "Unity.Addressables.Editor",
+        "Unity.InputSystem",
+        "Unity.Localization",
+        "Unity.Localization.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

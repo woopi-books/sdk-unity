@@ -7,6 +7,9 @@
   tagged `EditorOnly`). `WoopiBook_GetDevicePixelRatio` in the WebGL plugin.
 - UI Toolkit panels work on every supported Unity version: `WoopiPanelBehaviour` drives a `PanelRenderer` on Unity 6.5 and later (chosen with `UNITY_6000_5_OR_NEWER`) and a `UIDocument` before that. The safe zone overlay and the SimpleBook dev navigation use it; `ExampleDevNavigation` no longer fails to compile on Unity 6.0 to 6.4.
 - Sample: Interactions (tap, multi-tap, drag, hold and swipe, one scene each).
+- Localization tooling (Editor, needs Unity Localization and Addressables): Woopi > Localization > Set up remote localization (remote Addressables groups: all text of a language in one group and preloaded, images and audio in one group per page and language, labelled `woopi-page-NN`, with the page read from a `Page_NN` folder name; Locale included), Add language (Locale, tables and groups; untranslated entries fall back to the default language) and Build language pack (content update build that outputs only one language's bundles plus the new catalog, to upload without rebuilding the player).
+- `WoopiPageContent` (Woopi.Core.Localization): `PreloadPage` / `PreloadAround` download a page's localized media, and its neighbours', in the current language ahead of time.
+- Sample: Localization (localized text, image and audio over three pages, a language menu built from the available locales, `lang` start argument).
 - WebGL template: the Woopi platform deployments (dev and prod on AWS Amplify, `www.woopi.fun`)
   and the local development hosts are allowed origins. Without them a book loaded in the platform
   never received commands or sent events.
