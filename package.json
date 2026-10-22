@@ -16,9 +16,14 @@
   },
   "samples": [
     {
-      "displayName": "Example book",
+      "displayName": "Simple Book",
       "description": "A minimal complete book: a core scene with the Woopi host, ten dummy page scenes loaded with Addressables, and the adapter. Requires Addressables and the URP 2D renderer.",
-      "path": "Samples~/Example"
+      "path": "Samples~/SimpleBook"
+    },
+    {
+      "displayName": "Interactions",
+      "description": "Reusable pointer interactions with one demo scene each: tap, multi-tap (double / triple / custom count), drag, hold (charge or hold / release) and swipe. Each can let only the closest sprite react or all of them. Requires the Input System.",
+      "path": "Samples~/Interactions"
     }
   ]
 }
