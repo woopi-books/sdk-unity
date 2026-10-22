@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- WebGL template: the Woopi platform deployments (dev and prod on AWS Amplify, `www.woopi.fun`)
+  and the local development hosts are allowed origins. Without them a book loaded in the platform
+  never received commands or sent events.
+
 ## 0.2.0
 - Sound: the host can start the book muted and/or at a given volume (`muted`, `volume` in the `init` message or page URL) and change both at any time with the `SetMuted` and `SetVolume` commands. `AudioChanged` is sent whenever either changes; every event now also carries `muted` and `volume`.
 - `WoopiBookHost` applies the sound to `AudioListener.volume` by default (switch off with "Apply Audio To Listener" for books that route sound themselves; read `WoopiAudio` instead).

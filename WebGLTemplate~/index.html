@@ -5,8 +5,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>{{{ PRODUCT_NAME }}}</title>
   </head>
-  <body style="text-align: center; padding: 0; border: 0; margin: 0;">
-    <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1" style="width: {{{ WIDTH }}}px; height: {{{ HEIGHT }}}px; background: {{{ BACKGROUND_COLOR }}}"></canvas>
+  <body style="text-align: left; padding: 0; border: 0; margin: 0; overflow: hidden; background: #000;">
+    <!-- El libro ocupa toda la ventana (o el iframe de la plataforma), en cualquier dispositivo. -->
+    <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1" style="width: 100vw; height: 100vh; position: fixed; left: 0; top: 0; display: block; background: {{{ BACKGROUND_COLOR }}}"></canvas>
     <script src="Build/{{{ LOADER_FILENAME }}}"></script>
     <script>
       // ================================================================
@@ -52,6 +53,15 @@
         // Origins allowed to control the book. Edit for your deployments.
         var ALLOWED_ORIGINS = [
           "https://woopi.fun",
+          "https://www.woopi.fun",
+          // Plataforma Woopi en AWS Amplify: dev (rama develop) y prod (rama main) de woopi-books.
+          // Sin estos, el libro carga en la plataforma pero no recibe comandos ni manda eventos.
+          "https://develop.d3sut94vhpb3kn.amplifyapp.com",
+          "https://main.d3fsiocaft3z7w.amplifyapp.com",
+          // Desarrollo local: la app (Vite) y la pagina de prueba de ai-books.
+          "http://localhost:5173",
+          "http://localhost:5174",
+          "http://127.0.0.1:5173",
           "http://localhost:8080",
           "http://localhost:3000"
         ];
@@ -222,6 +232,11 @@
           else queued.push(cmd);
         }
 
+        // Para el bloque de gestos de abajo: un deslizar o un doble toque entra por el mismo
+        // camino que un comando de la plataforma (se valida, se encola y se informa igual).
+        window.__woopiDispatch = function (action) { dispatch({ source: "woopi-host", action: action }); };
+        window.__woopiNotifyHost = notifyHost;
+
         window.addEventListener("message", function (e) {
           if (ALLOWED_ORIGINS.indexOf(e.origin) === -1) return;
           var data = e.data;
@@ -284,6 +299,102 @@
         window.__woopiOnUnityError(message);
         console.error(message);
       });
+    </script>
+    <!-- ============================================================================
+         Woopi · pasar página (deslizar / doble toque en los bordes / flechas) + Escape
+         ============================================================================
+         Los mismos gestos que tienen los libros Unity de la plataforma. Sólo se pueden ver desde
+         adentro del iframe (la app es de otro origen), por eso viven en el template. Mandan los
+         comandos del contrato (NextPage / PreviousPage) por el mismo camino que la plataforma.
+
+         No interfiere con el libro: listeners pasivos en captura, sin preventDefault. El toque
+         simple es del libro (personajes, objetos); por eso los bordes piden DOBLE toque.
+         Escape avisa a la app: { source: 'woopi-unity', type: 'escape' }.
+    -->
+    <script>
+      (function () {
+        var NAV = {
+          swipe: { minDistanceRatio: 0.18, minDistancePx: 70, maxDurationMs: 650, horizontalRatio: 1.8 },
+          doubleTap: { zoneRatio: 0.18, zoneMinPx: 80, maxGapMs: 450, maxTapMs: 400, maxTapMovePx: 12, maxDriftPx: 45 },
+          cooldownMs: 800
+        };
+        var canvas = document.querySelector('#unity-canvas');
+
+        function notify(msg) { if (window.__woopiNotifyHost) window.__woopiNotifyHost(msg); }
+
+        window.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') notify({ source: 'woopi-unity', type: 'escape' });
+          else if (e.key === 'ArrowRight') turn('next');
+          else if (e.key === 'ArrowLeft') turn('prev');
+        });
+
+        var last = 0;
+        function turn(dir) {
+          var now = Date.now();
+          if (now - last < NAV.cooldownMs || !window.__woopiDispatch) return false;
+          last = now;
+          window.__woopiDispatch(dir === 'next' ? 'NextPage' : 'PreviousPage');
+          return true;
+        }
+
+        var flashEl = null, flashTimer = null;
+        function flash(side) {
+          if (!flashEl) {
+            flashEl = document.createElement('div');
+            flashEl.setAttribute('aria-hidden', 'true');
+            flashEl.style.cssText = 'position:fixed;top:0;bottom:0;width:22vw;max-width:170px;pointer-events:none;' +
+              'z-index:2147483647;opacity:0;transition:opacity .2s ease-out';
+            document.body.appendChild(flashEl);
+          }
+          var left = side === 'prev';
+          flashEl.style.left = left ? '0' : '';
+          flashEl.style.right = left ? '' : '0';
+          flashEl.style.background = 'linear-gradient(to ' + (left ? 'right' : 'left') + ', rgba(255,119,51,.40), rgba(255,119,51,0))';
+          flashEl.style.opacity = '1';
+          if (flashTimer) clearTimeout(flashTimer);
+          flashTimer = setTimeout(function () { flashEl.style.opacity = '0'; }, 170);
+        }
+
+        function edgeSide(x, width) {
+          var zone = Math.max(NAV.doubleTap.zoneMinPx, width * NAV.doubleTap.zoneRatio);
+          if (x <= zone) return 'prev';
+          if (x >= width - zone) return 'next';
+          return null;
+        }
+
+        if (!window.PointerEvent) return;
+        var g = null, lastTap = null, opts = { capture: true, passive: true };
+        window.addEventListener('pointerdown', function (e) {
+          if (!e.isPrimary) { if (g) g.cancelled = true; lastTap = null; return; }
+          g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: e.timeStamp, cancelled: false };
+        }, opts);
+        window.addEventListener('pointerup', function (e) {
+          if (!g || e.pointerId !== g.id) return;
+          var s = g; g = null;
+          if (s.cancelled) return;
+          var dx = e.clientX - s.x0, dy = e.clientY - s.y0, dt = e.timeStamp - s.t0;
+          var width = canvas.clientWidth || window.innerWidth;
+          var sw = NAV.swipe, minDist = Math.max(sw.minDistancePx, width * sw.minDistanceRatio);
+          if (dt <= sw.maxDurationMs && Math.abs(dx) >= minDist && Math.abs(dx) >= Math.abs(dy) * sw.horizontalRatio) {
+            lastTap = null;
+            turn(dx < 0 ? 'next' : 'prev');
+            return;
+          }
+          var d = NAV.doubleTap;
+          if (dt > d.maxTapMs || Math.abs(dx) > d.maxTapMovePx || Math.abs(dy) > d.maxTapMovePx) { lastTap = null; return; }
+          var side = edgeSide(e.clientX, width);
+          if (!side) { lastTap = null; return; }
+          if (lastTap && lastTap.side === side && e.timeStamp - lastTap.t <= d.maxGapMs &&
+              Math.abs(e.clientX - lastTap.x) <= d.maxDriftPx && Math.abs(e.clientY - lastTap.y) <= d.maxDriftPx) {
+            lastTap = null;
+            if (turn(side)) flash(side);
+            return;
+          }
+          lastTap = { side: side, x: e.clientX, y: e.clientY, t: e.timeStamp };
+        }, opts);
+        window.addEventListener('pointercancel', function () { g = null; lastTap = null; }, opts);
+        window.addEventListener('blur', function () { g = null; lastTap = null; });
+      })();
     </script>
   </body>
 </html>
