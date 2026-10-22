@@ -21,9 +21,13 @@ without rebuilding the player**. Requires Unity Localization, Addressables and t
   is labelled `woopi-page-03` and `Locale-es`. They are megabytes, so they load only when needed.
   The page comes from the folder name: keep a page's localized media under a folder like `Art/Page_03/`
   (also `page3`, `Page 03`). Media outside any page folder falls back to one group per language.
-- **Preload:** `WoopiPageContent.PreloadAround(page)` downloads the current page and its neighbours (page 2:
-  pages 2, 1 and 3) in the current language. `LocalizedContentDemo` calls it when the page or the language
-  changes. A reader on Spanish never downloads English, and never downloads page 9 while on page 2.
+- **Preload:** before showing a page, the book awaits `WoopiPageContent.PreloadPage(page)` (it downloads that page's
+  media in the current language) and only then points the image and voice at it; afterwards
+  `WoopiPageContent.PreloadNeighbours(page)` fetches the pages next to it (page 2: pages 1 and 3) in the
+  background. A reader on Spanish never downloads English, and never downloads page 9 while on page 2.
+  The order matters: in WebGL, downloading a bundle ahead of time and loading it for use at the same moment
+  can fail. On a language change Unity Localization loads the current page itself, so the sample only preloads
+  the neighbours then. See `LocalizedContentDemo`.
 - **Asset tables** are not flagged to preload: Unity would then load every asset in them.
 - Media used by several languages (the same image for all) goes to a shared group instead of a page group.
 

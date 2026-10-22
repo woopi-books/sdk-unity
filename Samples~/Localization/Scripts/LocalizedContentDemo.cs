@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
@@ -13,8 +14,10 @@ namespace Woopi.Samples.Localization
     /// resolve to that language's content and the handlers below run.
     ///
     /// The book has <see cref="PageCount"/> pages. Text is preloaded with the book; each page's image and
-    /// voice sit in their own Addressables group per language, so turning to a page asks
-    /// <see cref="WoopiPageContent"/> to download that page and its neighbours in the current language.
+    /// voice sit in their own Addressables group per language. Turning to a page first downloads it through
+    /// <see cref="WoopiPageContent"/> and only then points the image and voice at it (a page must not be
+    /// downloaded ahead of time and loaded for use at the same moment, or WebGL can abort one of the two).
+    /// Once it shows, the neighbouring pages are downloaded in the background.
     /// </summary>
     [AddComponentMenu("Woopi/Samples/Localized Content Demo")]
     public sealed class LocalizedContentDemo : MonoBehaviour
@@ -34,29 +37,34 @@ namespace Woopi.Samples.Localization
 
         private AudioClip _voiceClip;
         private int _page = 1;
+        private bool _mediaSubscribed;
 
         private void OnEnable()
         {
-            // Subscribing starts the load; the handlers also run again on every language change.
+            // Text is preloaded with the book, so it can follow the language straight away.
             title.StringChanged += OnTitle;
             body.StringChanged += OnBody;
-            picture.AssetChanged += OnPicture;
-            voice.AssetChanged += OnVoice;
             LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
-            ShowPage(_page);
+
+            StartCoroutine(ShowPage(_page));
         }
 
         private void OnDisable()
         {
             title.StringChanged -= OnTitle;
             body.StringChanged -= OnBody;
-            picture.AssetChanged -= OnPicture;
-            voice.AssetChanged -= OnVoice;
             LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
+
+            if (_mediaSubscribed)
+            {
+                _mediaSubscribed = false;
+                picture.AssetChanged -= OnPicture;
+                voice.AssetChanged -= OnVoice;
+            }
         }
 
-        public void NextPage() => ShowPage(Mathf.Min(PageCount, _page + 1));
-        public void PreviousPage() => ShowPage(Mathf.Max(1, _page - 1));
+        public void NextPage() => StartCoroutine(ShowPage(Mathf.Min(PageCount, _page + 1)));
+        public void PreviousPage() => StartCoroutine(ShowPage(Mathf.Max(1, _page - 1)));
 
         /// <summary>Plays the voice clip of the current page and language. Hooked to the button.</summary>
         public void PlayVoice()
@@ -69,25 +77,32 @@ namespace Woopi.Samples.Localization
             audioSource.Play();
         }
 
-        private void ShowPage(int page)
+        private IEnumerator ShowPage(int page)
         {
             _page = page;
             pageText.text = $"{page} / {PageCount}";
 
+            // Download the page first; pointing the references at it starts the real load.
+            yield return WoopiPageContent.PreloadPage(page);
+            if (_page != page)
+                yield break; // the reader has already moved on
+
+            if (!_mediaSubscribed)
+            {
+                _mediaSubscribed = true;
+                picture.AssetChanged += OnPicture;
+                voice.AssetChanged += OnVoice;
+            }
+
             // The entries of one page are named by its number; the same keys exist in every language.
             picture.SetReference(picture.TableReference, $"picture_{page}");
             voice.SetReference(voice.TableReference, $"voice_{page}");
-            Preload();
+
+            yield return WoopiPageContent.PreloadNeighbours(page);
         }
 
-        // New language: the current page and its neighbours must be fetched in it.
-        private void OnLocaleChanged(Locale locale) => Preload();
-
-        private void Preload()
-        {
-            StopAllCoroutines();
-            StartCoroutine(WoopiPageContent.PreloadAround(_page));
-        }
+        // New language: Unity Localization is already loading the current page in it, so fetch only the neighbours.
+        private void OnLocaleChanged(Locale locale) => StartCoroutine(WoopiPageContent.PreloadNeighbours(_page, 1, locale));
 
         private void OnTitle(string value) => titleText.text = value;
         private void OnBody(string value) => bodyText.text = value;

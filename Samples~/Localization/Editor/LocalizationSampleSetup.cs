@@ -279,7 +279,7 @@ namespace Woopi.Samples.Localization.Editor
             var next = MakeButton(pager, "Next", ">", 80, 56);
 
             var row = NewUi("Languages", content);
-            row.sizeDelta = new Vector2(900, 60);
+            row.sizeDelta = new Vector2(1200, 60);
             var rowLayout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
             rowLayout.childAlignment = TextAnchor.MiddleCenter;
             rowLayout.spacing = 12;
@@ -287,7 +287,7 @@ namespace Woopi.Samples.Localization.Editor
             rowLayout.childControlHeight = false;
             rowLayout.childForceExpandWidth = false;
             rowLayout.childForceExpandHeight = false;
-            var template = MakeButton(row, "LanguageButtonTemplate", "Language", 200, 56);
+            var template = MakeButton(row, "LanguageButtonTemplate", "Language", 170, 56);
 
             var demo = canvasObject.AddComponent<LocalizedContentDemo>();
             var source = canvasObject.AddComponent<AudioSource>();
