@@ -5,7 +5,8 @@ whatever languages the book has. It also sets up the project so that **a languag
 without rebuilding the player**. Requires Unity Localization, Addressables and the Input System.
 
 ## Run it
-0. Once after importing: menu **Woopi > Example > Build localization sample**. It runs
+0. Once after importing: the Editor offers to build the sample the next time it is idle. If you chose Not now
+   (or Don't ask again), run it yourself with menu **Woopi > Example > Build localization sample**. It runs
    **Woopi > Localization > Set up remote localization**, creates English and Spanish, the string table
    `WoopiSample` and the asset table `WoopiSampleAssets` (a picture and a voice clip per language,
    generated so the sample ships no binaries) and the scene. Safe to re-run.
@@ -41,8 +42,9 @@ without rebuilding the player**. Requires Unity Localization, Addressables and t
    it saves next to the Addressables settings (default `Assets/AddressableAssetsData/<Platform>/`). Keep one
    per released version.
 2. **Woopi > Localization > Build language pack**, pick the language and that state file. It runs a content
-   update build and copies the language's bundles and the new catalog to
-   `<output>/<code>/<BuildTarget>/`.
+   update build and copies the language's bundles, the small language-neutral ones (shared assets and table
+   data, which change whenever a language is added) and the new catalog to `<output>/<code>/<BuildTarget>/`.
+   Bundles of the other languages are not touched.
 3. Upload those files into the book's content folder, next to the release's `<BuildTarget>/` files, and
    reload the book. The player finds the new catalog on startup and lists the new language.
 

@@ -157,21 +157,25 @@ namespace Woopi.Core.Editor.Localization
             var changed = 0;
             foreach (var group in settings.groups)
             {
-                if (!IsLocalizationGroup(group))
-                    continue;
-
-                var schema = group.GetSchema<BundledAssetGroupSchema>();
-                if (schema == null || IsRemote(settings, schema))
-                    continue;
-
-                schema.BuildPath.SetVariableByName(settings, AddressableAssetSettings.kRemoteBuildPath);
-                schema.LoadPath.SetVariableByName(settings, AddressableAssetSettings.kRemoteLoadPath);
-                EditorUtility.SetDirty(schema);
-                settings.SetDirty(AddressableAssetSettings.ModificationEvent.GroupSchemaModified, group, true, true);
-                changed++;
+                if (IsLocalizationGroup(group) && MakeRemote(settings, group))
+                    changed++;
             }
 
             return changed;
+        }
+
+        /// <summary>Switches one group to the remote paths. Returns false when it was already remote or has no bundle schema.</summary>
+        public static bool MakeRemote(AddressableAssetSettings settings, AddressableAssetGroup group)
+        {
+            var schema = group.GetSchema<BundledAssetGroupSchema>();
+            if (schema == null || IsRemote(settings, schema))
+                return false;
+
+            schema.BuildPath.SetVariableByName(settings, AddressableAssetSettings.kRemoteBuildPath);
+            schema.LoadPath.SetVariableByName(settings, AddressableAssetSettings.kRemoteLoadPath);
+            EditorUtility.SetDirty(schema);
+            settings.SetDirty(AddressableAssetSettings.ModificationEvent.GroupSchemaModified, group, true, true);
+            return true;
         }
 
         public static bool IsLocalizationGroup(AddressableAssetGroup group) =>

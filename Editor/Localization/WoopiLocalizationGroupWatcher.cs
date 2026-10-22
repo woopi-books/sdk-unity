@@ -26,12 +26,9 @@ namespace Woopi.Core.Editor.Localization
             if (!(data is AddressableAssetGroup group) || !WoopiLocalizationSetup.IsLocalizationGroup(group))
                 return;
 
-            // Schemas are still being added while the event fires.
-            EditorApplication.delayCall += () =>
-            {
-                if (settings != null && AddressableGroupRules.Instance.AssetResolver is WoopiPageGroupResolver)
-                    WoopiLocalizationSetup.ApplyRemotePaths(settings);
-            };
+            // The group's schemas are attached before the event is sent, so it can be switched right away.
+            if (AddressableGroupRules.Instance.AssetResolver is WoopiPageGroupResolver)
+                WoopiLocalizationSetup.MakeRemote(settings, group);
         }
     }
 }

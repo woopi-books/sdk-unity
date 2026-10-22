@@ -33,7 +33,7 @@ namespace Woopi.Samples.Localization.Editor
         private static readonly string Root = ResolveRoot();
         private static string ArtRoot => Root + "/Art";
         private static string TableRoot => Root + "/Tables";
-        private static string ScenePath => Root + "/Scenes/LocalizationSample.unity";
+        internal static string ScenePath => Root + "/Scenes/LocalizationSample.unity";
 
         private static readonly Dictionary<string, (string title, string body)> Texts = new Dictionary<string, (string, string)>
         {

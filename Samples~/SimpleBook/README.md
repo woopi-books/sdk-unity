@@ -5,7 +5,8 @@ adapter. Use it as the reference for structure; see the Woopi SDK README (Packag
 documentation) for the SDK itself.
 
 ## Run it
-0. Once after importing: menu **Woopi > Example > Build sample book**. It generates the ten page scenes,
+0. Once after importing: the Editor offers to build the sample the next time it is idle. If you chose Not now
+   (or Don't ask again), run it yourself with menu **Woopi > Example > Build sample book**. It generates the ten page scenes,
    the core scene and the Addressables groups from the art, and is safe to re-run. Requires Addressables
    and the URP 2D renderer. The imported folder ships without scenes on purpose, so the project
    gets no Addressables groups until you build the sample.

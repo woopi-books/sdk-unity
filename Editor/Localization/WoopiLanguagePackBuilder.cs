@@ -160,7 +160,16 @@ namespace Woopi.Core.Editor.Localization
                 bytes += new FileInfo(to).Length;
             }
 
-            foreach (var bundle in result.AssetBundleBuildResults.Where(b => b.SourceAssetGroup != null && groups.Contains(b.SourceAssetGroup)))
+            // Language-neutral localization groups (shared assets and table data) change when a language is added,
+            // and the new catalog points at their new files, so they travel with every pack. They are small.
+            var languages = LocalizationEditorSettings.GetLocales();
+            var neutral = settings.groups
+                .Where(g => WoopiLocalizationSetup.IsLocalizationGroup(g) &&
+                            !languages.Any(l => g.Name.EndsWith("-" + l.LocaleName, System.StringComparison.Ordinal)))
+                .ToList();
+
+            foreach (var bundle in result.AssetBundleBuildResults.Where(b => b.SourceAssetGroup != null &&
+                                                                              (groups.Contains(b.SourceAssetGroup) || neutral.Contains(b.SourceAssetGroup))))
                 Copy(bundle.FilePath);
 
             foreach (var catalog in Directory.GetFiles(catalogDir, "catalog_*"))
