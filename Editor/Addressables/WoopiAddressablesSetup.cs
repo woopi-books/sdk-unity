@@ -11,10 +11,10 @@ namespace Woopi.Core.Editor.Addressables
     /// URL, which the platform replaces at runtime through the <c>content</c> start argument
     /// (see <see cref="WoopiContentUrl"/>). Menu: Woopi > Addressables > Use content placeholder.
     /// </summary>
-    internal static class WoopiAddressablesSetup
+    public static class WoopiAddressablesSetup
     {
         [MenuItem("Woopi/Addressables/Use content placeholder")]
-        internal static void UsePlaceholder()
+        public static void UsePlaceholder()
         {
             var settings = AddressableAssetSettingsDefaultObject.GetSettings(true);
             if (settings == null)

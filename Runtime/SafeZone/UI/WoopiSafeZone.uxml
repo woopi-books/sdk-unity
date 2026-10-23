@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="WoopiSafeZone.uss"/>
+    <ui:VisualElement name="root" picking-mode="Ignore" class="sz-root">
+        <ui:VisualElement name="zoneLeft" picking-mode="Ignore" class="sz-zone sz-zone-left">
+            <ui:Label text="Previous page" picking-mode="Ignore" class="sz-title"/>
+            <ui:Label text="double tap here" picking-mode="Ignore" class="sz-hint"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="safeArea" picking-mode="Ignore" class="sz-safe">
+            <ui:Label text="Safe zone" picking-mode="Ignore" class="sz-title"/>
+            <ui:Label text="taps, double taps and holds are the book's" picking-mode="Ignore" class="sz-hint"/>
+            <ui:Label text="Fast horizontal swipes anywhere turn the page" picking-mode="Ignore" class="sz-hint sz-warning"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="zoneRight" picking-mode="Ignore" class="sz-zone sz-zone-right">
+            <ui:Label text="Next page" picking-mode="Ignore" class="sz-title"/>
+            <ui:Label text="double tap here" picking-mode="Ignore" class="sz-hint"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="dockZone" picking-mode="Ignore" class="sz-dock">
+            <ui:Label text="Reader menu: pointer or touch here opens it" picking-mode="Ignore" class="sz-dock-label"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

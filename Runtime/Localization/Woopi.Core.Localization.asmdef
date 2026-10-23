@@ -1,0 +1,33 @@
+{
+    "name": "Woopi.Core.Localization",
+    "rootNamespace": "Woopi.Core.Localization",
+    "references": [
+        "Woopi.Core",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
+        "Unity.Localization"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "WOOPI_ADDRESSABLES",
+        "WOOPI_LOCALIZATION"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "1.0.0",
+            "define": "WOOPI_ADDRESSABLES"
+        },
+        {
+            "name": "com.unity.localization",
+            "expression": "1.0.0",
+            "define": "WOOPI_LOCALIZATION"
+        }
+    ],
+    "noEngineReferences": false
+}

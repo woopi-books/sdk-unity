@@ -25,6 +25,15 @@ mergeInto(LibraryManager.library, {
     }
   },
 
+  // Screen pixels per browser CSS pixel, so the book can place things against the template's page-turn zones
+  // (which are measured in CSS pixels). 1 when unknown.
+  WoopiBook_GetDevicePixelRatio: function () {
+    try {
+      if (typeof window !== 'undefined' && window.devicePixelRatio > 0) return window.devicePixelRatio;
+    } catch (e) {}
+    return 1;
+  },
+
   // Host -> Unity at startup. Returns '{"lang":"es","page":5,"content":"https://...","muted":1,"volume":0.5,"extra":[{"k":"theme","v":"dark"}]}' (any key may be missing) from
   // window.WoopiInit, which the Woopi template fills from an `init` message or the page URL.
   // `consume` (1 when the book starts with these args, 0 to peek) controls whether a later `init`

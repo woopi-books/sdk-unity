@@ -72,6 +72,28 @@ drives the book through the host page. The book must not ship its own HUD or but
   over the canvas, so do not reserve space or place important content where the platform's controls
   will sit.
 
+## Page-turn gestures and the safe zone
+
+The WebGL template turns pages by itself, and it listens on the whole window, not on the book, so the book
+receives the same touches:
+
+- a **double tap** in an edge zone (the outer 18% of the width on each side, at least 80 CSS pixels) goes back
+  (left) or forward (right);
+- a **fast horizontal swipe** anywhere (at least 18% of the width in under 0.65 s) turns the page;
+- a single tap is always left to the book.
+
+The Woopi reader page, which hosts the book, adds one more: moving the pointer into a thin strip along the **bottom edge**
+(26 CSS pixels, full width), or touching it on a mobile device, opens the reader menu (language, restart, exit, full screen).
+A tap or a drag the book wants down there can open the menu instead, so keep interactions out of that strip.
+
+Keep double-tap targets in the middle and above the bottom strip (the safe zone), and avoid horizontal swipes and quick
+horizontal drags for book interactions. To see the zones while designing, add the overlay: **GameObject > Woopi > Safe Zone Overlay**. It draws the edge zones, the bottom strip and the
+safe area over the Game view, in edit mode as well as in Play mode, and follows the Game view's size. It is an Editor-only
+tool: the object is tagged `EditorOnly`, so Unity strips it, and the assets only it uses, from every player build. Keep that
+tag. If you want it in a build, make your own copy of `WoopiSafeZoneOverlay`, its UXML and USS. In code, `WoopiSafeZone` has
+the same numbers (`GetSafeScreenRect`, `GetSafeWorldRect(camera)`, `IsInSafeZone(point)`), and it is safe to ship.
+The constants mirror the template's page-turn settings and must be kept in sync with them.
+
 ## The adapter
 
 Implement `IBookAdapter` on a MonoBehaviour that wraps your page loading and language selection.

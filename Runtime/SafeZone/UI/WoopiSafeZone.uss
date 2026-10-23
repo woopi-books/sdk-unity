@@ -1,0 +1,93 @@
+:root {
+    --sz-edge: rgba(255, 119, 51, 0.30);
+    --sz-edge-line: rgba(255, 119, 51, 0.90);
+    --sz-safe: rgba(60, 200, 110, 0.10);
+    --sz-safe-line: rgba(60, 200, 110, 0.85);
+    --sz-text: #ffffff;
+    --sz-text-dim: rgba(255, 255, 255, 0.75);
+    --sz-warning: #ffd25e;
+    --sz-dock: rgba(80, 150, 255, 0.35);
+    --sz-dock-line: rgba(80, 150, 255, 0.95);
+}
+
+/* UIDocument's own container sizes to its content, so it collapses to zero height unless
+   told to fill the panel. */
+.unity-ui-document__root {
+    flex-grow: 1;
+}
+
+.sz-root {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.sz-zone {
+    /* The width is set from code, from the template's page-turn rule. */
+    width: 18%;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--sz-edge);
+}
+
+.sz-zone-left {
+    border-right-width: 2px;
+    border-right-color: var(--sz-edge-line);
+}
+
+.sz-zone-right {
+    border-left-width: 2px;
+    border-left-color: var(--sz-edge-line);
+}
+
+.sz-safe {
+    flex-grow: 1;
+    flex-shrink: 1;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 44px;
+    background-color: var(--sz-safe);
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-color: var(--sz-safe-line);
+    border-bottom-color: var(--sz-safe-line);
+}
+
+.sz-title {
+    color: var(--sz-text);
+    font-size: 22px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.sz-hint {
+    color: var(--sz-text-dim);
+    font-size: 15px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.sz-warning {
+    color: var(--sz-warning);
+    margin-top: 6px;
+}
+
+.sz-dock {
+    /* The height is set from code, from the reader dock's hotzone. It spans the full width, over the edge zones too. */
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 26px;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--sz-dock);
+    border-top-width: 2px;
+    border-top-color: var(--sz-dock-line);
+}
+
+.sz-dock-label {
+    color: var(--sz-text);
+    font-size: 12px;
+    -unity-text-align: middle-center;
+}
