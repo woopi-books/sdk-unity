@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
 
 - Safe zone: `WoopiSafeZone` (the page-turn zones of the WebGL template and the reader dock's bottom hotzone as screen and world rectangles, `IsInDockHotzone`) and `WoopiSafeZoneOverlay`
   (Editor-only UI Toolkit overlay that draws them in the Game view, in edit mode and in Play mode; GameObject > Woopi > Safe Zone Overlay,
