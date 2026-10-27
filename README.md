@@ -13,15 +13,15 @@ It is released under the [MIT license](LICENSE.md).
 Package Manager > **+** > **Add package from git URL**:
 
 ```
-https://github.com/woopifun/sdk-unity.git#v0.2.0
+https://github.com/woopi-books/sdk-unity.git#v0.3.0
 ```
 
 The part after `#` is the release tag; always pin one. The newest release is listed under
-[Tags](https://github.com/woopifun/sdk-unity/tags) and in [CHANGELOG.md](CHANGELOG.md). A private
+[Tags](https://github.com/woopi-books/sdk-unity/tags) and in [CHANGELOG.md](CHANGELOG.md). A private
 repository needs Git credentials on your machine. Requires Unity 6000.0 or newer. Addressables is
 optional but needed for content hosting (below) and for the sample.
 
-To try the sample: Package Manager > Woopi SDK > **Samples** > **Example book** > **Import**. It is not
+To try the sample: Package Manager > Woopi SDK > **Samples** > **Simple Book** > **Import**. It is not
 imported by default.
 
 ## What you get
