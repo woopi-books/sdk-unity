@@ -1,6 +1,6 @@
 {
   "name": "com.woopi.sdk",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "displayName": "Woopi SDK",
   "description": "Book host bridge for Woopi interactive books: lets the Woopi platform drive a Unity WebGL book (next/previous/go to page, language, restart) and tells it where its Addressables content is hosted.",
   "unity": "6000.0",
@@ -32,6 +32,11 @@
       "displayName": "Localization",
       "description": "Text, an image and an audio clip that change with the book's language, in English and Spanish, plus a language menu that lists whatever languages the book has. Shows the layout that lets a language be published later without rebuilding the player. Requires Unity Localization, Addressables and the Input System.",
       "path": "Samples~/Localization"
+    },
+    {
+      "displayName": "Moho Workflow",
+      "description": "How to take a rigged, animated character from Moho into a book: the Moho project and PSD, the glTF exports (.glb and .gltf) and a scene that plays both side by side. Requires Moho Pro 14.4 or newer and glTFast (com.unity.cloud.gltfast), which you add yourself.",
+      "path": "Samples~/MohoWorkflow"
     }
   ]
 }

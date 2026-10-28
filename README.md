@@ -13,7 +13,7 @@ It is released under the [MIT license](LICENSE.md).
 Package Manager > **+** > **Add package from git URL**:
 
 ```
-https://github.com/woopi-books/sdk-unity.git#v0.3.0
+https://github.com/woopi-books/sdk-unity.git#v0.3.1
 ```
 
 The part after `#` is the release tag; always pin one. The newest release is listed under
@@ -21,8 +21,11 @@ The part after `#` is the release tag; always pin one. The newest release is lis
 repository needs Git credentials on your machine. Requires Unity 6000.0 or newer. Addressables is
 optional but needed for content hosting (below) and for the sample.
 
-To try the sample: Package Manager > Woopi SDK > **Samples** > **Simple Book** > **Import**. It is not
-imported by default.
+To try a sample: Package Manager > Woopi SDK > **Samples** > pick one > **Import**. Samples are not imported
+by default. Available samples: **Simple Book** (a minimal complete book), **Interactions** (tap, multi-tap, drag,
+hold and swipe, one scene each), **Localization** (text, image and audio that change with the language, and
+publishing a language without rebuilding the player) and **Moho Workflow** (a rigged Moho character exported as
+glTF into a book). Each sample's README lists what it needs.
 
 ## What you get
 
