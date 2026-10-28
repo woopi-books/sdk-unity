@@ -122,7 +122,11 @@ namespace Woopi.Core.SafeZone
             gameObject.tag = "EditorOnly";
 
             BindPanel();
-            var panel = GetComponent(UsesPanelRenderer ? typeof(PanelRenderer) : typeof(UIDocument));
+#if UNITY_6000_5_OR_NEWER
+            var panel = GetComponent(typeof(PanelRenderer));
+#else
+            var panel = GetComponent(typeof(UIDocument));
+#endif
             var settings = UnityEditor.AssetDatabase.LoadAssetAtPath<PanelSettings>(AssetFolder + "WoopiSafeZonePanelSettings.asset");
             var tree = UnityEditor.AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(AssetFolder + "WoopiSafeZone.uxml");
             if (panel == null || settings == null || tree == null)
