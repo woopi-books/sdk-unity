@@ -1,6 +1,6 @@
 {
   "name": "com.woopi.sdk",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "displayName": "Woopi SDK",
   "description": "Book host bridge for Woopi interactive books: lets the Woopi platform drive a Unity WebGL book (next/previous/go to page, language, restart) and tells it where its Addressables content is hosted.",
   "unity": "6000.0",

@@ -7,7 +7,7 @@ namespace Woopi.Core
         /// Package version. Must match package.json; the Editor warns when it does not
         /// (Woopi.Core.Editor.WoopiVersionCheck).
         /// </summary>
-        public const string Version = "0.3.0";
+        public const string Version = "0.3.1";
 
         /// <summary>
         /// Version of the host/book message contract. It only changes when an existing command or

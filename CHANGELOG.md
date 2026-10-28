@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+- Sample: Moho Workflow is now listed in `package.json`, so it can be imported from Package Manager (Moho to Unity with glTF; needs Moho Pro 14.4 or newer and glTFast, which you add yourself).
+- Safe zone overlay: the panel component is chosen with `UNITY_6000_5_OR_NEWER` (PanelRenderer on Unity 6.5 and later, UIDocument before), the same switch `WoopiPanelBehaviour` uses.
+- Docs: the README install snippet pins `v0.3.1` and the sample section lists every sample.
+
 ## 0.3.0
 
 - Safe zone: `WoopiSafeZone` (the page-turn zones of the WebGL template and the reader dock's bottom hotzone as screen and world rectangles, `IsInDockHotzone`) and `WoopiSafeZoneOverlay`
